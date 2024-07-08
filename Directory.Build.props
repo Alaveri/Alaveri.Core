@@ -1,0 +1,9 @@
+<Project>
+	<PropertyGroup>
+		<Version>0.1.0</Version>
+		<VersionSuffix></VersionSuffix>
+	</PropertyGroup>
+	<PropertyGroup Condition="$(Configuration)=='Debug'">
+		<VersionSuffix>-dev.$([System.DateTime]::UtcNow.ToString(yyMMddhhmm))</VersionSuffix>
+	</PropertyGroup>
+</Project>

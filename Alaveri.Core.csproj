@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<SignAssembly>False</SignAssembly>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>		
+		<Title>Alaveri Core Library</Title>
+		<Description>The core library used by Alaveri projects.</Description>
+		<Authors>Alaveri Software</Authors>
+		<Copyright>©2024 Alaveri Software</Copyright>
+		<Company>Alaveri Software</Company>
+		<AssemblyVersion>$(Version)</AssemblyVersion>		
+		<PackageVersion>$(AssemblyVersion)$(VersionSuffix)</PackageVersion>		
+		<PackageProjectUrl>https://github.com/Alaveri/Alaveri.Core</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Alaveri/Alaveri.Core</RepositoryUrl>
+		<PackageTags>.NET;C#;Utilities</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="Avalonia" Version="11.0.11" />
+	  <PackageReference Include="Avalonia.Skia" Version="11.0.11" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+	  <PackageReference Include="System.Data.Common" Version="4.3.0" />
+	  <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+	  <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Update="README.md">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
+
+	<Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+	  <Exec Command="del $(TargetDir)..\*.nupkg" />
+	</Target>
+
+</Project>
