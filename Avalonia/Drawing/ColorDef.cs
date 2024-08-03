@@ -236,9 +236,9 @@ public readonly struct ColorDef
     /// <param name="green">The green component of the color.</param>
     /// <param name="blue">The blue component of the color.</param>
     /// <param name="alpha">The alpha component of the color or 255 if not specified.</param>
-    public ColorDef(byte red, byte green, byte blue, byte? alpha = null)
+    public ColorDef(byte red, byte green, byte blue, byte alpha = 255)
     {
-        _hslColor = new Color(alpha ?? 255, red, green, blue).ToHsl();
+        _hslColor = new Color(alpha, red, green, blue).ToHsl();
     }
 
     /// <summary>
@@ -248,9 +248,9 @@ public readonly struct ColorDef
     /// <param name="saturation">The saturation component of the color.</param>
     /// <param name="lightness">The lightness component of the color.</param>
     /// <param name="alpha">The alpha component of the color or 1 if not specified.</param>
-    public ColorDef(double hue, double saturation, double lightness, double? alpha = null)
+    public ColorDef(double hue, double saturation, double lightness, double alpha = 1.0)
     {
-        _hslColor = new HslColor(alpha ?? 1, hue, saturation, lightness);
+        _hslColor = new HslColor(alpha, hue, saturation, lightness);
     }
 
     /// <summary>
@@ -279,6 +279,26 @@ public readonly struct ColorDef
         var alpha = (byte)(rgba & 0x000000FF);
         return new ColorDef(red, green, blue, alpha);
     }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified hue, saturation, lightness, and alpha components (0-1).
+    /// </summary>
+    /// <param name="hue">The hue component of the color.</param>
+    /// <param name="saturation">The saturation component of the color.</param>
+    /// <param name="lightness">The lightness component of the color.</param>
+    /// <param name="alpha">The alpha component of the color or 1 if not specified.</param>
+    /// <returns>A new <see cref="ColorDef"/> with the specified HSL color components.</returns>
+    public static ColorDef FromHsl(double hue, double saturation, double lightness, double alpha = 1) => new(hue, saturation, lightness, alpha);
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified hue, saturation, value, and alpha components (0-1).
+    /// </summary>
+    /// <param name="hue">The hue component of the color.</param>
+    /// <param name="saturation">The saturation component of the color.</param>
+    /// <param name="value">The value component of the color.</param>
+    /// <param name="alpha">The alpha component of the color or 1 if not specified.</param>
+    /// <returns>A new <see cref="ColorDef"/> with the specified HSV color components.</returns>
+    public static ColorDef FromHsv(double hue, double saturation, double value, double alpha = 1) => new HsvColor(hue, saturation, value, alpha);
 
     public static implicit operator Color(ColorDef color) => color.AsArgbColor;
 

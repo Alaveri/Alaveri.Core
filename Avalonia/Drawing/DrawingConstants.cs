@@ -2,30 +2,6 @@
 
 namespace Alaveri.Avalonia.Drawing;
 
-public enum ColorComponent
-{
-    [EnumDescriptor("Hue")]
-    Hue,
-    [EnumDescriptor("Saturation")]
-    Saturation,
-    [EnumDescriptor("Lightness")]
-    Lightness,
-    [EnumDescriptor("HsvValue")]
-    Value,
-    [EnumDescriptor("Red")]
-    Red,
-    [EnumDescriptor("Green")]
-    Green,
-    [EnumDescriptor("Blue")]
-    Blue,
-    [EnumDescriptor("Alpha")]
-    RgbAlpha,
-    [EnumDescriptor("Alpha")]
-    HslAlpha,
-    [EnumDescriptor("Alpha")]
-    HsvAlpha
-}
-
 public static class DrawingConstants
 {
     public readonly static NumberRange HueRange = new(0, 360);
