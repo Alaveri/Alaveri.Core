@@ -1,23 +1,36 @@
-﻿using Avalonia.Media;
+﻿using static Avalonia.Media.DrawingContext;
 
 namespace Alaveri.Avalonia.Drawing;
 
 public class DrawingContextStates : IDisposable
 {
-    public IList<DrawingContext.PushedState> States { get; } = [];
+    public IList<PushedState> States { get; } = [];
 
-    public void PushState(DrawingContext.PushedState state)
+    public void PushState(PushedState state)
     {
         States.Add(state);
     }
 
-    public void PopState()
+    public PushedState? PeekState()
     {
         if (States.Count == 0)
-            return;
+            return null;
+        return States.Last();
+    }
+
+    public void PopState()
+    {
+        var state = PopAndPreserve();
+        state?.Dispose();
+    }
+
+    public PushedState? PopAndPreserve()
+    {
+        if (States.Count == 0)
+            return null;
         var state = States.Last();
         States.Remove(state);
-        state.Dispose();
+        return state;
     }
 
     protected virtual void Dispose(bool disposing)
