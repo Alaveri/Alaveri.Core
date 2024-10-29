@@ -29,7 +29,7 @@ public class LanguageTranslator(ILanguageDataSource dataSource) : ILanguageTrans
     /// <param name="key">The key of the translated string.</param>
     /// <returns>the translated phrase from the specified identifier.</returns>
     public virtual string Translate(string key)
-    { 
+    {
         return DataSource.ReadItem(key);
     }
 

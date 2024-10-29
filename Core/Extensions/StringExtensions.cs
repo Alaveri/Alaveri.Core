@@ -1,4 +1,4 @@
-﻿namespace Alaveri.Core;
+﻿namespace Alaveri.Core.Extensions;
 
 /// <summary>
 /// Provides string-related utilities.

@@ -1,4 +1,4 @@
-﻿using Alaveri.Core.Extensions;
+﻿using Alaveri.Extensions;
 
 namespace Alaveri.Avalonia.Drawing;
 

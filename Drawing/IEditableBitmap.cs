@@ -8,5 +8,5 @@ public interface IEditableBitmap
 
     ICanvas GetCanvas(ISurface surface);
 
-    ISurface GetSurface(AlphaType? alphaType = null);    
+    ISurface GetSurface(AlphaType? alphaType = null);
 }

@@ -13,8 +13,8 @@ public abstract class TextConfigurationSerializer : ConfigurationSerializer
     /// <value>The configuration encoding.</value>
     public virtual Encoding Encoding { get; set; } = Encoding.UTF8;
 
-    public TextConfigurationSerializer(Encoding? encoding = null) 
-    { 
+    public TextConfigurationSerializer(Encoding? encoding = null)
+    {
         encoding ??= Encoding.UTF8;
         Encoding = encoding;
     }

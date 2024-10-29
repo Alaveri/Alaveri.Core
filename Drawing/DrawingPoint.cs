@@ -48,7 +48,7 @@ public readonly struct DrawingPoint(double x, double y)
     public static implicit operator DrawingPoint(Point point) => new(point);
 
 
-    public DrawingPoint(Point point) : this(point.X, point.Y) 
+    public DrawingPoint(Point point) : this(point.X, point.Y)
     {
     }
 }

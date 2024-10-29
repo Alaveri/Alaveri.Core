@@ -5,7 +5,7 @@ namespace Alaveri.Data;
 /// <summary>
 /// Options used while querying the data source.
 /// </summary>
-public class DatabaseQueryOptions: IDatabaseQueryOptions
+public class DatabaseQueryOptions : IDatabaseQueryOptions
 {
     /// <summary>
     /// The timeout used for this query.

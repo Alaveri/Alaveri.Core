@@ -45,7 +45,7 @@ public abstract class DatabaseAccessor : IDatabaseAccessor
     /// <param name="name">The name of this transaction.</param>
     /// <param name="isolationLevel">The isolation level of the transaction.</param>
     /// <returns>the new transaction.</returns>
-    public abstract IDbTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified, string name = "");    
+    public abstract IDbTransaction BeginTransaction(IsolationLevel isolationLevel = IsolationLevel.Unspecified, string name = "");
 
     /// <summary>
     /// Perform disposal of managed resources.
@@ -93,7 +93,7 @@ public abstract class DatabaseAccessor : IDatabaseAccessor
     /// </summary>
     public void Dispose()
     {
-        Dispose(true);            
+        Dispose(true);
         GC.SuppressFinalize(this);
     }
 
@@ -113,5 +113,5 @@ public abstract class DatabaseAccessor : IDatabaseAccessor
     {
         ConnectionString = connectionString;
         Connection = CreateConnection(connectionString);
-    }    
+    }
 }

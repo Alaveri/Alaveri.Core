@@ -3,28 +3,12 @@ using Newtonsoft.Json;
 
 namespace Alaveri.Configuration;
 
-/// <summary>
-/// The type of configuration.  Determines where the configuration will be stored, either in %programdata% or %appdata%.
-/// </summary>
-public enum ConfigurationType
-{
-    /// <summary>
-    /// Store the configuration in the %programdata% folder.
-    /// </summary>
-    Application,
-
-    /// <summary>
-    /// Store the configuration in the user's %appdata% folder.
-    /// </summary>
-    User
-}
-
 public delegate string GetConfigurationNameFunc();
 
 /// <summary>
 /// Represents a base class for holding and persisting application or user configuration information.
 /// </summary>
-public abstract class Configuration : IConfiguration
+public abstract class BaseConfiguration : IConfiguration
 {
     /// <summary>
     /// Gets or sets the configuration filename.
@@ -80,7 +64,7 @@ public abstract class Configuration : IConfiguration
     /// <param name="size">The size of the configuration data.</param>
     /// <param name="serializer">The serializer used to serialize the configuration data.</param>
     /// <returns>A new configuration instance loaded from the stream, or a new empty configuration if an error occurred.</returns>
-    public static TConfiguration LoadFromStream<TConfiguration>(Stream stream, int size, IConfigurationSerializer? serializer = null) 
+    public static TConfiguration LoadFromStream<TConfiguration>(Stream stream, int size, IConfigurationSerializer? serializer = null)
         where TConfiguration : class, IConfiguration, new()
     {
         serializer ??= new JsonConfigurationSerializer();
@@ -104,7 +88,7 @@ public abstract class Configuration : IConfiguration
     /// <param name="size">The size of the configuration data.</param>
     /// <param name="serializer">The serializer used to deserialize configuration data.</param>
     /// <returns>A new configuration instance loaded from the stream, or a new empty configuration if an error occurred.</returns>
-    public static async Task<TConfiguration> LoadFromStreamAsync<TConfiguration>(Stream stream, int size, IConfigurationSerializer? serializer = null) 
+    public static async Task<TConfiguration> LoadFromStreamAsync<TConfiguration>(Stream stream, int size, IConfigurationSerializer? serializer = null)
         where TConfiguration : class, IConfiguration, new()
     {
         serializer ??= new JsonConfigurationSerializer();
@@ -127,7 +111,7 @@ public abstract class Configuration : IConfiguration
     /// <param name="filename">The name of the file containing the configuration information.</param>
     /// <param name="serializer">The serializer used to deserialize the configuration data.</param>
     /// <returns>A new configuration instance loaded from the stream, or a new empty configuration if an error occurred.</returns>
-    public static TConfiguration LoadFromFile<TConfiguration>(string filename, IConfigurationSerializer? serializer = null) 
+    public static TConfiguration LoadFromFile<TConfiguration>(string filename, IConfigurationSerializer? serializer = null)
         where TConfiguration : class, IConfiguration, new()
     {
         serializer ??= new JsonConfigurationSerializer();
@@ -151,7 +135,7 @@ public abstract class Configuration : IConfiguration
     /// <param name="filename">The name of the file containing the configuration information.</param>
     /// <param name="serializer">The serializer used to deserialize the configuration data.</param>
     /// <returns>A new configuration instance loaded from the stream, or a new empty configuration if an error occurred.</returns>
-    public static async Task<TConfiguration> LoadFromFileAsync<TConfiguration>(string filename, IConfigurationSerializer? serializer = null) 
+    public static async Task<TConfiguration> LoadFromFileAsync<TConfiguration>(string filename, IConfigurationSerializer? serializer = null)
         where TConfiguration : class, IConfiguration, new()
     {
         serializer ??= new JsonConfigurationSerializer();
@@ -163,8 +147,8 @@ public abstract class Configuration : IConfiguration
             return await LoadFromStreamAsync<TConfiguration>(stream, (int)stream.Length, serializer);
         }
         catch
-        { 
-            return new TConfiguration(); 
+        {
+            return new TConfiguration();
         }
 
     }
@@ -256,7 +240,7 @@ public abstract class Configuration : IConfiguration
     {
         var dir = Path.GetDirectoryName(filename) + Path.DirectorySeparatorChar;
         if (!Directory.Exists(dir))
-           Directory.CreateDirectory(dir);
+            Directory.CreateDirectory(dir);
         ConfigurationFilename = filename;
         using var stream = new FileStream(filename, FileMode.Create, FileAccess.Write);
         SaveToStream(stream);

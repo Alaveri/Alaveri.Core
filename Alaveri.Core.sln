@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35017.193
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alaveri.Core", "Alaveri.Core.csproj", "{137868E0-EF16-4486-8E68-0ECD7963FA41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Alaveri", "Alaveri.csproj", "{137868E0-EF16-4486-8E68-0ECD7963FA41}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{72C6999D-485D-49C0-B19F-DF51CB5ECD15}"
 	ProjectSection(SolutionItems) = preProject

@@ -11,7 +11,7 @@ public interface IDatabaseQuery
     /// <summary>
     /// The connection used to access the database.
     /// </summary>
-    IDbConnection Connection { get;  }
+    IDbConnection Connection { get; }
 
     /// <summary>
     /// The options used to execute the query.

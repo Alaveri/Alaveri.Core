@@ -1,4 +1,4 @@
-﻿using Alaveri.Core.Extensions;
+﻿using Alaveri.Extensions;
 
 namespace Alaveri.Core;
 
@@ -17,7 +17,7 @@ public static class CompareHelper
     /// <returns>True of the value is in the sequence.</returns>
     public static bool InSequence<TValue>(TValue value, IEnumerable<TValue> sequence, IComparer<TValue>? comparer = null)
     {
-        return sequence.Any(item => (comparer?.Compare(item, value) ?? item?.Equals(value).AsInt32() ?? 0) == 0);;
+        return sequence.Any(item => (comparer?.Compare(item, value) ?? item?.Equals(value).AsInt32() ?? 0) == 0); ;
     }
 
     /// <summary>
@@ -49,7 +49,7 @@ public static class CompareHelper
             StringComparison.Ordinal => StringComparer.Ordinal,
             StringComparison.OrdinalIgnoreCase => StringComparer.OrdinalIgnoreCase,
             _ => StringComparer.CurrentCultureIgnoreCase
-        };            
+        };
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public static class CompareHelper
     /// If none is provided, the comparison defaults to OrdinalIgnoreCase.</param>
     /// <returns>True of the value is in the sequence.</returns>
     public static bool StringInSequence(string? value, IEnumerable<string> sequence, StringComparison? comparisonType = null)
-    { 
+    {
         return InSequence(value, sequence, GetStringComparer(comparisonType));
     }
 

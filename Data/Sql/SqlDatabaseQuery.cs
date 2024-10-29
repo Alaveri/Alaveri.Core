@@ -1,6 +1,6 @@
 ﻿using Alaveri.Core;
-using Alaveri.Core.Extensions;
 using Alaveri.Data.Sql.Extensions;
+using Alaveri.Extensions;
 using System.Data;
 using System.Data.SqlClient;
 using System.Xml;
@@ -131,7 +131,7 @@ public class SqlDatabaseQuery(IDbConnection connection) : DatabaseQuery(connecti
     /// <typeparam name="TResult">The type of the value to be returned.</typeparam>
     /// <returns>The first item in the result set.</returns>
     /// 
-    public override async Task<TResult> ExecuteScalarAsync<TResult>(TResult defaultValue)       
+    public override async Task<TResult> ExecuteScalarAsync<TResult>(TResult defaultValue)
     {
         using var command = PrepareCommand(Options);
         var value = await command.ExecuteScalarAsync().ConfigureAwait(false);

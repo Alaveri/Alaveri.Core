@@ -7,11 +7,11 @@ using Platform = Avalonia.Platform;
 
 namespace Alaveri.Avalonia.Drawing;
 
-public class EditorBitmap(PixelSize size, Vector dpi, Platform.PixelFormat pixelFormat, AlphaFormat alphaFormat) : WriteableBitmap(size, dpi, pixelFormat, alphaFormat)
+public class EditorBitmap(PixelSize size, Vector dpi, PixelFormat pixelFormat, AlphaFormat alphaFormat) : WriteableBitmap(size, dpi, pixelFormat, alphaFormat)
 {
     private readonly PixelSize _size = size;
 
-    public int Width =>_size.Width;
+    public int Width => _size.Width;
 
     public int Height => _size.Height;
 
@@ -29,7 +29,7 @@ public class EditorBitmap(PixelSize size, Vector dpi, Platform.PixelFormat pixel
         return SKSurface.Create(info, frameBuffer.Address, frameBuffer.RowBytes);
     }
 
-    public EditorBitmap(int width, int height) : this(new PixelSize(width, height), default, Platform.PixelFormat.Rgba8888,
+    public EditorBitmap(int width, int height) : this(new PixelSize(width, height), default, PixelFormat.Rgba8888,
         Platform.AlphaFormat.Premul)
     {
     }

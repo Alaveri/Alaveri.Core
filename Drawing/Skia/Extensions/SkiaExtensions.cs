@@ -1,4 +1,4 @@
-﻿using Alaveri.Core.Extensions;
+﻿using Alaveri.Extensions;
 using SkiaSharp;
 
 namespace Alaveri.Drawing.Skia.Extensions;
@@ -65,7 +65,7 @@ public static class SkiaExtensions
     public static SKPaint ToSkPaint(this IPaint paint)
     {
         var skPaint = new SKPaint
-        {          
+        {
             IsAntialias = paint.AntiAlias,
             Color = paint.Color.ToSKColor(),
             Style = paint.PaintStyle.ToSkPaintStyle(),

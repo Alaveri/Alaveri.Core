@@ -31,4 +31,4 @@ public interface IImagePalette
     /// The number of colors in the palette.
     /// </summary>
     int ColorCount { get; }
-}     
+}

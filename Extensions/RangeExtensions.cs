@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Alaveri.Core.Extensions;
+namespace Alaveri.Extensions;
 
 public static class RangeExtensions
 {

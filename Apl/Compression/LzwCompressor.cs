@@ -1,287 +1,262 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Alaveri.Core;
 
-namespace Alaveri.Core.Apl.Compression;
+namespace Alaveri.Apl.Compression;
 
-public class LzwCompressor(byte bitSize, ushort readBufferSize, ushort writeBufferSize) : Compressor(readBufferSize, writeBufferSize)
+public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
 {
-    private const byte DefaultBitSize = 13;
-    private const byte StartBitSize = 9;
-    private const ushort EndOfStream = 256;
-    private const ushort IncreaseCodeSize = 257;
-    private const ushort ClearDictionary = 258;
-    private const ushort EmptyCode = 259;
-    private const ushort FirstCode = 260;
+    public LzwCodes Codes { get; set; } = new AplLzwCodes(dataBitSize);
 
-    private struct DictionaryEntry
+    public byte BitSize { get; set; } = bitSize;
+
+    public byte DataBitSize { get; set; } = dataBitSize;
+
+    protected sbyte CurrentBitSize { get; set; } = (sbyte)bitSize;
+
+    protected LzwDictionaryEntry[] Dictionary { get; set; } = [];
+
+    protected ushort NextCode { get; set; }
+
+    protected ushort MaxCode { get; set; }
+
+    protected ushort CurrentMaxCode { get; set; }
+
+    protected byte HashShift { get; set; }
+
+    protected byte[] DecodeBuffer { get; set; } = [];
+
+    protected bool Overflow { get; set; }
+
+    public ushort DictEntryCount { get; set; }
+
+    protected ushort DecodeString(ushort count, ushort code)
     {
-        public ushort Code;
-        public ushort Prefix;
-        public byte Char;
+        int bufferIndex = count;
+        while (code > byte.MaxValue)
+        {
+            var entry = Dictionary[code];
+            code = entry.Prefix;
+            DecodeBuffer[bufferIndex] = entry.Character;
+            count++;
+            bufferIndex++;
+        }
+        DecodeBuffer[bufferIndex] = (byte)code;
+        count++;
+        return count;
     }
-
-    private DictionaryEntry[] Dictionary { get; set; } = [];
-
-    private int DictionaryEntries { get; set; }
-    private byte[] DecodeBuffer { get; set; } = [];
-    private byte BitSize { get; set; } = bitSize;
-    private byte CurrentBitSize { get; set; } = DefaultBitSize;
-    private ushort MaxCode { get; set; }
-    private ushort CurrentMaxCode { get; set; }
-    private ushort NextCode { get; set; }
-    private bool Overflow { get; set; }
-    private byte HashShift { get; set; }
 
     protected override void InitCompression()
     {
         base.InitCompression();
-        DictionaryEntries = BitSize switch
+        DictEntryCount = BitSize switch
         {
             12 => 5021,
             13 => 9029,
             14 => 18041,
             15 => 49063,
-            _ => throw new NotSupportedException("Unsupported bit size. Supported bit sizes are 12-15."),
+            _ => 4096,
         };
         HashShift = (byte)(BitSize - 8);
-        AllocateDictionary();
+        Dictionary = new LzwDictionaryEntry[DictEntryCount];
         InitCoder();
     }
 
-    private void InitCoder()
+    protected void InitCoder()
     {
-        CurrentBitSize = StartBitSize;
-        MaxCode = (ushort)(1 << BitSize - 1);
-        CurrentMaxCode = (ushort)(1 << CurrentBitSize - 1);
-        NextCode = FirstCode;
+        CurrentBitSize = LzwConstants.StartBitSize;
+        MaxCode = (ushort)((1 << BitSize) - 1);
+        CurrentMaxCode = (ushort)((1 << CurrentBitSize) - 1);
+        NextCode = Codes.FirstCode;
         Overflow = false;
-        for (var index = 0; index < DictionaryEntries; index++)
-            Dictionary[index].Code = EmptyCode;
+        for (int index = 0; index < Dictionary.Length - 1; index++)
+        {
+            Dictionary[index] = new LzwDictionaryEntry
+            {
+                Code = Codes.EmptyCode,
+                Prefix = Codes.EmptyCode,
+                Character = (byte)index
+            };
+        }
     }
 
-    private void AllocateDictionary()
+    protected ushort FindEntry(ushort prefix, byte character)
     {
-        Dictionary = new DictionaryEntry[DictionaryEntries];
-    }
-
-    private void AllocateDecodeBuffer()
-    {
-        DecodeBuffer = new byte[DictionaryEntries];
-    }
-
-    private ushort FindEntry(ushort prefix, byte character)
-    {
-        var index = (character << HashShift) ^ prefix;
+        var index = character << HashShift ^ prefix;
         var offset = 1;
         if (index != 0)
-            offset = DictionaryEntries - index;
-        do
+            offset = DictEntryCount - index;
+
+        while (true)
         {
             var entry = Dictionary[index];
-            if (entry.Code == EmptyCode)
+            if (entry.Code == Codes.EmptyCode)
                 break;
-            if (entry.Prefix == prefix && entry.Char == character)
+            if (entry.Prefix == prefix && entry.Character == character)
                 break;
             index -= offset;
             if (index < 0)
-                index += DictionaryEntries;
-        } while (true);
+                index += DictEntryCount;
+        }
         return (ushort)index;
     }
 
-    private ushort DecodeString(ushort count, ushort code)
+    public override async Task<int> GetOriginalSizeAsync(Stream source, CancellationToken ct = default)
     {
-        var bufferPos = count;
-        while (code > byte.MaxValue)
-        {
-            var entry = Dictionary[code];
-            code = entry.Prefix;
-            DecodeBuffer[bufferPos] = entry.Char;
-            bufferPos++;
-            count++;
-        }
-        DecodeBuffer[bufferPos] = (byte)code;
-        count++;
-        return count;
-    }
-
-    public override uint GetOriginalSize(Stream source)
-    {
+        using var reader = new AsyncBinaryReader(source);
         var startPos = source.Position;
-        source.ReadByte();
-        using var reader = new BinaryReader(source, Encoding.Default, true);
-        var total = reader.ReadUInt32();
+        await reader.ReadByte(ct);
+        var total = await reader.ReadInt32(ct);
         source.Seek(startPos, SeekOrigin.Begin);
         return total;
     }
 
-    public override uint Compress(Stream source, Stream dest, uint length)
+    public override async Task<int> CompressStreamAsync(Stream source, Stream dest, int length, CancellationToken ct = default)
     {
-        using var writer = new BinaryWriter(dest, Encoding.Default, true);
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(dest);
-        if (!source.CanRead)
-            throw new ArgumentException("Source stream must be readable.", nameof(source));
-        if (!dest.CanWrite)
-            throw new ArgumentException("Destination stream must be writable.", nameof(dest));
+        await base.CompressStreamAsync(source, dest, length, ct);
+        var destStart = dest.Position;
         if (source.Position + length > source.Length)
-            throw new ArgumentOutOfRangeException(nameof(length), "Length exceeds source stream length.");
+            throw new EndOfStreamException("Read past stream end");
 
-        var total = 0u;
-        var bits = BitSize;
-        writer.Write(bits);
-        var startPos = dest.Position;
-        writer.Write(total);
-        ushort code = ReadByte();
+        using var writer = new BinaryWriter(dest);
+        using var reader = new BinaryReader(source);
+
+        writer.Write(BitSize);
+        ushort code = await ReadByteAsync(ct);
+        if (AddTotalToStream)
+            writer.Write(length);
 
         while (ReadTotal < length)
         {
-            var character = ReadByte();
+            if (ct.IsCancellationRequested)
+                return 0;
+            var character = await ReadByteAsync(ct);
             UpdateProgress(length, ReadTotal);
             var index = FindEntry(code, character);
             var entry = Dictionary[index];
-
-            if (entry.Code != EmptyCode)
+            if (entry.Code != Codes.EmptyCode)
             {
                 code = entry.Code;
                 continue;
             }
-
             if (NextCode < MaxCode)
             {
-                entry.Code = NextCode;
-                entry.Prefix = code;
-                entry.Char = character;
+                Dictionary[index].Code = NextCode;
+                Dictionary[index].Prefix = code;
+                Dictionary[index].Character = character;
                 NextCode++;
             }
             else
                 Overflow = true;
 
+
             if (code >= CurrentMaxCode && CurrentBitSize < BitSize)
             {
-                WriteBits(IncreaseCodeSize, CurrentBitSize);
+                await WriteBitsAsync(Codes.IncreaseCodeSize, CurrentBitSize, ct);
                 CurrentBitSize++;
-                CurrentMaxCode = (ushort)(1 << CurrentBitSize - 1);
+                CurrentMaxCode = (ushort)((1 << CurrentBitSize) - 1);
             }
-
-            WriteBits(code, CurrentBitSize);
+            await WriteBitsAsync(code, CurrentBitSize, ct);
             code = character;
-
             if (Overflow)
             {
-                WriteBits(ClearDictionary, CurrentBitSize);
+                await WriteBitsAsync(Codes.ClearDict, CurrentBitSize, ct);
                 InitCoder();
             }
         }
-        WriteBits(code, CurrentBitSize);
-        WriteBits(EndOfStream, CurrentBitSize);
-        EndWriteBits();
-        total = ReadTotal;
-        var endPos = dest.Position;
-        dest.Seek(startPos, SeekOrigin.Begin);
-        writer.Write(total);
-        dest.Seek(endPos, SeekOrigin.Begin);
+        await WriteBitsAsync(code, CurrentBitSize, ct);
+        await WriteBitsAsync(Codes.EndOfStream, CurrentBitSize, ct);
+        await EndWriteBitsAsync(ct);
         UpdateProgress(length, ReadTotal);
-        return WriteTotal;
-
+        return (int)(dest.Position - destStart);
     }
 
-    public override void Decompress(Stream source, Stream dest)
+    public override async Task DecompressStreamAsync(Stream source, Stream dest, int originalSize, CancellationToken ct = default)
     {
-        using var reader = new BinaryReader(source, Encoding.Default, true);
-        ArgumentNullException.ThrowIfNull(source);
-        ArgumentNullException.ThrowIfNull(dest);
-        if (!source.CanRead)
-            throw new ArgumentException("Source stream must be readable.", nameof(source));
-        if (!dest.CanWrite)
-            throw new ArgumentException("Destination stream must be writable.", nameof(dest));
-        var bits = reader.ReadByte();
-        if (bits < 12 || bits > 15)
-            throw new NotSupportedException("Unsupported bit size. Supported bit sizes are 12-15.");
+        await base.DecompressStreamAsync(source, dest, originalSize, ct);
 
-        var total = reader.ReadUInt32();
-        BitSize = bits;
+        using var reader = new BinaryReader(source);
+        using var writer = new BinaryWriter(dest);
+
+        BitSize = reader.ReadByte();
+        if (!LzwConstants.SupportedBitSizes.Contains(BitSize))
+            throw new NotSupportedException("Lzw bit size not supported");
+
+        if (AddTotalToStream)
+            originalSize = reader.ReadInt32();
+
         InitCoder();
-        AllocateDecodeBuffer();
-
-        var oldCode = ReadBits(bits);
-        if (oldCode == EndOfStream)
+        DecodeBuffer = new byte[DictEntryCount];
+        var oldCode = await ReadBitsAsync(CurrentBitSize, ct);
+        if (oldCode == Codes.EndOfStream)
             return;
-        var character = (byte)oldCode;
-        WriteByte(character);
+        var character = oldCode;
+        await WriteByteAsync((byte)oldCode, ct);
 
         while (true)
         {
-            var code = ReadBits(bits);
-            if (code == EndOfStream)
-                break;
-            switch (code)
+            var code = await ReadBitsAsync(CurrentBitSize, ct);
+            if (code == Codes.IncreaseCodeSize)
             {
-                case IncreaseCodeSize:
-                    CurrentBitSize++;
-                    continue;
-                case ClearDictionary:
-                    InitCoder();
-                    oldCode = ReadBits(bits);
-                    if (oldCode == EndOfStream)
-                        return;
-                    character = (byte)oldCode;
-                    WriteByte(character);
-                    continue;
-                case EndOfStream:
-                    break;
+                CurrentBitSize++;
+                continue;
             }
-            var count = code >= NextCode ? DecodeString(1, oldCode) : DecodeString(0, code);
+            if (code == Codes.ClearDict)
+            {
+                InitCoder();
+                oldCode = await ReadBitsAsync(CurrentBitSize, ct);
+                if (oldCode == Codes.EndOfStream)
+                    break;
+                await WriteByteAsync((byte)oldCode, ct);
+                continue;
+            }
+            if (code == Codes.EndOfStream)
+                break;
+            ushort count;
+            if (code >= NextCode)
+            {
+                DecodeBuffer[0] = (byte)character;
+                count = DecodeString(1, oldCode);
+            }
+            else
+                count = DecodeString(0, code);
+
             var decodeIndex = count - 1;
             character = DecodeBuffer[decodeIndex];
+
             while (count > 0)
             {
-                WriteByte(DecodeBuffer[decodeIndex]);
+                await WriteByteAsync(DecodeBuffer[decodeIndex], ct);
                 decodeIndex--;
                 count--;
             }
-            UpdateProgress(total, WriteTotal);
-
-            if (NextCode < MaxCode)
+            UpdateProgress(originalSize, WriteTotal);
+            if (NextCode <= MaxCode)
             {
                 var entry = Dictionary[NextCode];
                 entry.Prefix = oldCode;
-                entry.Char = character;
+                entry.Character = (byte)character;
                 NextCode++;
+                if (Codes.DeferredClear && NextCode >= MaxCode && CurrentBitSize < BitSize)
+                {
+                    CurrentBitSize = (sbyte)BitSize;
+                    MaxCode = (ushort)(MaxCode << 1);
+                }
             }
             oldCode = code;
         }
-        FlushWriteBuffer();
+        await FlushWriteBufferAsync(ct);
     }
 
-    public override Task<uint> CompressAsync(Stream source, Stream dest, uint length)
-    {
-        return Task.Run(() =>
-        {
-            return Compress(source, dest, length);
-        });
-    }
-
-    public override Task DecompressAsync(Stream source, Stream dest)
-    {
-        return Task.Run(() =>
-        {
-            Decompress(source, dest);
-        });
-    }
-
-    public LzwCompressor() : this(DefaultBitSize, DefaultWriteBufferSize, DefaultReadBufferSize)
+    public LzwCompressor(byte dataBitSize, AplCompressionLevel compressionLevel)
+        : this(dataBitSize, LzwConstants.AplLzwCompressionLevels[compressionLevel])
     {
     }
 
-    public LzwCompressor(byte bitSize) : this(bitSize, DefaultWriteBufferSize, DefaultReadBufferSize)
+    public LzwCompressor(AplCompressionLevel compressionLevel)
+        : this(8, compressionLevel)
     {
     }
 
-    public LzwCompressor(ushort readBufferSize, ushort writeBufferSize) : this(DefaultBitSize, readBufferSize, writeBufferSize)
+    public LzwCompressor() : this(8, LzwConstants.DefaultBitSize)
     {
     }
 }

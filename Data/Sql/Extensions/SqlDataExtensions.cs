@@ -1,4 +1,4 @@
-﻿using Alaveri.Core;
+﻿using Alaveri.Core.Extensions;
 using System.Data;
 using System.Data.SqlClient;
 

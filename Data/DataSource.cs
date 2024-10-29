@@ -5,7 +5,7 @@
 /// </summary>
 /// <typeparam name="TDataItem">The type of the data source.</typeparam>
 /// <typeparam name="TDataItemId">The type of the data item ID.</typeparam>
-public abstract class DataSource<TDataItemId, TDataItem> : IDataSource<TDataItemId, TDataItem> 
+public abstract class DataSource<TDataItemId, TDataItem> : IDataSource<TDataItemId, TDataItem>
     where TDataItem : class
     where TDataItemId : IEquatable<TDataItemId>
 {

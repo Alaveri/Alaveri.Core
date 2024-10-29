@@ -8,7 +8,7 @@ namespace Alaveri.Configuration;
 /// <summary>
 /// Represents a configuration serializer that uses JSON serialization.
 /// </summary>
-/// <seealso cref="Alaveri.Configuration.ConfigurationSerializer" />
+/// <seealso cref="ConfigurationSerializer" />
 /// <remarks>
 /// Initializes a new instance of the <see cref="JsonConfigurationSerializer"/> class using the specified encoding.  Defaults to UTF8.
 /// </remarks>
@@ -23,8 +23,8 @@ public class JsonConfigurationSerializer(Encoding? encoding = null) : TextConfig
         Formatting = Formatting.Indented,
         NullValueHandling = NullValueHandling.Ignore,
         DefaultValueHandling = DefaultValueHandling.Include,
-        ContractResolver = new CamelCasePropertyNamesContractResolver(),        
-        Converters = { new StringEnumConverter(new CamelCaseNamingStrategy()) }        
+        ContractResolver = new CamelCasePropertyNamesContractResolver(),
+        Converters = { new StringEnumConverter(new CamelCaseNamingStrategy()) }
     };
 
     /// <summary>
@@ -57,4 +57,3 @@ public class JsonConfigurationSerializer(Encoding? encoding = null) : TextConfig
         return JsonConvert.DeserializeObject<TConfiguration>(json, Settings) ?? new TConfiguration();
     }
 }
-    

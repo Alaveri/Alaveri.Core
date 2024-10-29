@@ -20,7 +20,7 @@ namespace Alaveri.Core
         /// Holds the list of values considered to be "False" for boolean conversions and comparisons.
         /// Defaults to "true", "yes", "y" and "1".
         /// </summary>
-        public static IEnumerable<string> FalseValues { get; set; } = 
+        public static IEnumerable<string> FalseValues { get; set; } =
         [
             "false", "no", "n", "0"
         ];
@@ -82,7 +82,7 @@ namespace Alaveri.Core
         /// <param name="value">The value to convert.</param>
         /// <param name="defaultValue">The default value of the value is invalid.</param>
         /// <returns>The converted value or the default.</returns>
-        public static TResult  ConvertObject<TResult>(object? value, TResult defaultValue) where TResult : IConvertible
+        public static TResult ConvertObject<TResult>(object? value, TResult defaultValue) where TResult : IConvertible
         {
             return ChangeType(value, defaultValue);
         }

@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using Alaveri.Data;
+using System.Data;
 using System.Xml;
 
 namespace Alaveri.Data;
@@ -72,7 +73,7 @@ public abstract class DatabaseQuery(IDbConnection connection) : IDatabaseQuery
     /// <param name="defaultValue">The default value if the returned value cannot be converted.</param>
     /// <typeparam name="TResult">The type of the value to be returned.</typeparam>
     /// <returns>The first item in the result set.</returns>
-    public abstract Task<TResult> ExecuteScalarAsync<TResult>(TResult defaultValue); 
+    public abstract Task<TResult> ExecuteScalarAsync<TResult>(TResult defaultValue);
 
     /// <summary>
     /// Executes the query with no result set returned.
@@ -107,7 +108,7 @@ public abstract class DatabaseQuery(IDbConnection connection) : IDatabaseQuery
             {
                 if (paramValue != null && parameter.Size > 0)
                     parameter.Value = paramValue[..Math.Min(parameter.Size, paramValue.Length)];
-            } 
+            }
         }
     }
 

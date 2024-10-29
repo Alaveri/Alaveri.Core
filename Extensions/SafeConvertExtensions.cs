@@ -1,4 +1,6 @@
-﻿namespace Alaveri.Core.Extensions;
+﻿using Alaveri.Core;
+
+namespace Alaveri.Extensions;
 
 /// <summary>
 /// Provides extension methods related to safe conversions.

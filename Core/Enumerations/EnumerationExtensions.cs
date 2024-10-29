@@ -1,7 +1,4 @@
-﻿namespace Alaveri.Core.Extensions;
-
-using Alaveri.Core.Enumerations;
-
+﻿namespace Alaveri.Core.Enumerations;
 /// <summary>
 /// Extension methods for enum related functions.
 /// </summary>
@@ -67,7 +64,7 @@ public static class EnumerationExtensions
     {
         return EnumHelper.GetLinkedEnum<TEnum>(enumValue);
     }
-        
+
     /// <summary>
     /// Returns true if the specified enum has the specified attribute.
     /// </summary>

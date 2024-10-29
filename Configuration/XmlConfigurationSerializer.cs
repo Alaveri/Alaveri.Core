@@ -9,7 +9,7 @@ namespace Alaveri.Configuration;
 /// <summary>
 /// Represents a configuration serializer that uses XML serialization.
 /// </summary>
-/// <seealso cref="Alaveri.Configuration.ConfigurationSerializer" />
+/// <seealso cref="ConfigurationSerializer" />
 /// <remarks>
 /// Initializes a new instance of the <see cref="XmlConfigurationSerializer"/> class using the specified encoding default namespace, namespaces and extra types.  
 /// Defaults to UTF8.

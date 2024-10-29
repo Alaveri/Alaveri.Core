@@ -18,7 +18,7 @@ public static class EnumHelper
         var attributes = info.FirstOrDefault()?.GetCustomAttributes(typeof(TAttribute), false) ?? null;
         if (attributes == null)
             return null;
-        return (attributes.Length > 0) ? (TAttribute)attributes[0] : null;
+        return attributes.Length > 0 ? (TAttribute)attributes[0] : null;
     }
 
     /// <summary>
@@ -112,7 +112,7 @@ public static class EnumHelper
     /// <typeparam name="TAttribute">The type of attribute.</typeparam>
     /// <param name="enumValue">The value of the enum to check.</param>
     /// <returns>true if the specified enum has the specified attribute</returns>
-    public static bool HasAttribute<TAttribute>(Enum enumValue) where TAttribute: Attribute
+    public static bool HasAttribute<TAttribute>(Enum enumValue) where TAttribute : Attribute
     {
         return GetEnumAttribute<TAttribute>(enumValue) != null;
     }

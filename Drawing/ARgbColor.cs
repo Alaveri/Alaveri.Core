@@ -17,7 +17,7 @@ public struct ARgbColor(uint color)
     public byte Alpha
     {
         readonly get => (byte)(Color >> 24);
-        set => Color = (Color & 0x00FFFFFF) | ((uint)value << 24);
+        set => Color = Color & 0x00FFFFFF | (uint)value << 24;
     }
 
     /// <summary>
@@ -26,7 +26,7 @@ public struct ARgbColor(uint color)
     public byte Red
     {
         readonly get => (byte)(Color >> 16);
-        set => Color = (Color & 0xFF00FFFF) | ((uint)value << 16);
+        set => Color = Color & 0xFF00FFFF | (uint)value << 16;
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public struct ARgbColor(uint color)
     public byte Green
     {
         readonly get => (byte)(Color >> 8);
-        set => Color = (Color & 0xFFFF00FF) | ((uint)value << 8);
+        set => Color = Color & 0xFFFF00FF | (uint)value << 8;
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ public struct ARgbColor(uint color)
     public byte Blue
     {
         readonly get => (byte)Color;
-        set => Color = (Color & 0xFFFFFF00) | value;
+        set => Color = Color & 0xFFFFFF00 | value;
     }
 
     /// <summary>
@@ -54,7 +54,7 @@ public struct ARgbColor(uint color)
     /// <param name="green">The green component of the color.</param>
     /// <param name="blue">The blue component of the color.</param>
     /// <param name="alpha">The alpha component of the color.</param>
-    public ARgbColor(byte red, byte green, byte blue, byte alpha = 255) : this((uint)((alpha << 24) | (red << 16) | (green << 8) | blue))
+    public ARgbColor(byte red, byte green, byte blue, byte alpha = 255) : this((uint)(alpha << 24 | red << 16 | green << 8 | blue))
     {
     }
 }
