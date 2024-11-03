@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<SignAssembly>False</SignAssembly>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Title>Alaveri Avalonia Library</Title>
+		<Description>The Avalonia library used by Alaveri projects.</Description>
+		<Authors>Alaveri Software</Authors>
+		<Copyright>©2024 Alaveri Software</Copyright>
+		<Company>Alaveri Software</Company>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
+		<PackageVersion>$(AssemblyVersion)$(VersionSuffix)</PackageVersion>
+		<PackageProjectUrl>https://github.com/Alaveri/Alaveri.Core</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/Alaveri/Alaveri.Core</RepositoryUrl>
+		<PackageTags>.NET;C#;Utilities</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<PackageOutputPath>..\NuGet\</PackageOutputPath>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Avalonia" Version="11.2.0" />
+		<PackageReference Include="SkiaSharp" Version="2.88.8" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Alaveri.Core\Alaveri.Core.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="LICENSE">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
+		<None Update="README.md">
+			<PackagePath>\</PackagePath>
+			<Pack>True</Pack>
+		</None>
+	</ItemGroup>
+
+</Project>

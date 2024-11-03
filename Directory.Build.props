@@ -4,6 +4,6 @@
 		<VersionSuffix></VersionSuffix>
 	</PropertyGroup>
 	<PropertyGroup Condition="$(Configuration)=='Debug'">
-		<VersionSuffix>-dev.$([System.DateTime]::UtcNow.ToString(yyMMddhhmm))</VersionSuffix>
+		<VersionSuffix>-dev.$([System.DateTime]::UtcNow.ToString(yyMMddHHmm))</VersionSuffix>
 	</PropertyGroup>
 </Project>
