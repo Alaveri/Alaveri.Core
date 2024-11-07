@@ -1,4 +1,6 @@
 ﻿using Alaveri.Core;
+using Alaveri.Core.Imaging;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Alaveri.Core.Apl.Images;
@@ -19,20 +21,21 @@ public class AplPalette : IAplPalette
         }
     }
 
-    public static async Task<IAplPalette> LoadFromStream(Stream stream, CancellationToken ct = default)
+    public static async Task<IAplPalette> LoadFromStreamAsync(Stream stream, int paletteSize, CancellationToken ct = default)
     {
-        var palette = new AplPalette();
-        using var reader = new AsyncBinaryReader(stream, Encoding.ASCII, true);
-        var count = await reader.ReadUInt16(ct);
-        for (var index = 0; index < count; index++)
-        {
-            palette.Colors.Add(new AplRgbColor
-            {
-                Red = await reader.ReadByte(ct),
-                Green = await reader.ReadByte(ct),
-                Blue = await reader.ReadByte(ct)
-            });
-        }
-        return palette;
+        var colors = new AplRgbColor[paletteSize];
+        var colorBytes = new byte[3 * paletteSize];
+        await stream.ReadAsync(colorBytes, ct);
+        MemoryMarshal.AsBytes(colors.AsSpan());
+        return new AplPalette(colors);
+    }
+
+    public AplPalette()
+    {
+    }
+
+    public AplPalette(IList<AplRgbColor> colors)
+    {
+        Colors = colors;
     }
 }

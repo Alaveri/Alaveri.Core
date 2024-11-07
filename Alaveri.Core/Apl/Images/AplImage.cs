@@ -3,12 +3,16 @@ using System.IO.Compression;
 using System.IO;
 using System.Runtime.InteropServices;
 using Alaveri.Core.Apl.Compression;
+using SixLabors.ImageSharp;
+using SkiaSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace Alaveri.Core.Apl.Images;
 
 public class AplImage : IAplImage
 {
-    public byte[] Buffer { get; private set; }
+    public byte[] Buffer { get; set; }
 
     public ushort Width { get; private set; }
 
@@ -33,10 +37,9 @@ public class AplImage : IAplImage
         Buffer = new byte[DataSize];
     }
 
-    protected async Task LzwCompressImage(Stream dest, AplCompressionLevel compressionLevel)
+    protected static async Task LzwCompressImageAsync(Stream source, Stream dest, AplCompressionLevel compressionLevel)
     {
         var compressor = new LzwCompressor(compressionLevel);
-        using var source = new MemoryStream(Buffer);
         await compressor.CompressStreamAsync(source, dest, (int)source.Length);
     }
 
@@ -46,41 +49,56 @@ public class AplImage : IAplImage
         var header = new AplImageHeader(this, planes, compression, compressionLevel);
         await header.SaveToStreamAsync(stream);
         Palette?.SaveToStream(stream);
-        using var bufferStream = new AplImageStream(Buffer, header.Planes);
+        using var bufferStream = new MemoryStream(Buffer);
         switch (compression)
         {
             case AplCompression.None:
                 await bufferStream.CopyToAsync(stream);
                 break;
             case AplCompression.Lzw:
-                await LzwCompressImage(bufferStream, compressionLevel);
+                await LzwCompressImageAsync(bufferStream, stream, compressionLevel);
                 break;
             default:
                 throw new NotSupportedException("Unsupported compression type.");
         }
     }
 
-    public static async Task<IAplImage> LoadFromStreamAsync(Stream stream)
+    public static async Task<IAplImage> LoadFromStreamAsync(Stream stream, CancellationToken ct)
     {
-        var header = await AplImageHeader.LoadFromStreamAsync(stream);
+        var header = await AplImageHeader.LoadFromStreamAsync(stream, ct);
         IAplPalette? palette = null;
         if (header.PaletteSize > 0)
-            palette = await AplPalette.LoadFromStream(stream);
+            palette = await AplPalette.LoadFromStreamAsync(stream, header.PaletteSize, ct);
         var image = new AplImage(header, palette);
-        using var dest = new AplImageStream(image.Buffer, header.Planes);
+        using var dest = new MemoryStream(image.Buffer);
         switch (header.Compression)
         {
             case AplCompression.None:
-                await stream.CopyToAsync(dest);
+                await stream.CopyToAsync(dest, ct);
                 break;
             case AplCompression.Lzw:
                 var decompressor = new LzwCompressor(header.CompressionLevel);
-                await decompressor.DecompressStreamAsync(stream, dest, header.DataSize);
+                await decompressor.DecompressStreamAsync(stream, dest, header.DataSize, ct);
                 break;
             default:
                 throw new NotSupportedException("Unsupported compression type.");
         }
         return image;
+    }
+
+    public static IAplImage FromSkiaBitmap(SKBitmap bitmap)
+    {
+        var image = new AplImage((ushort)bitmap.Width, (ushort)bitmap.Height, (byte)(bitmap.BytesPerPixel * 8), 1);
+        var pixels = bitmap.GetPixels();
+        var buffer = new byte[bitmap.RowBytes * bitmap.Height];
+        Marshal.Copy(pixels, buffer, 0, buffer.Length);
+        image.Buffer = buffer;
+        return image;
+    }
+
+    public static IAplImage FromImageSharpImage(Image image)
+    {
+        throw new NotImplementedException();
     }
 
     public AplImage(IAplImageHeader header, IAplPalette? palette) : this(header.Width, header.Height, header.Bpp, header.Planes, palette)

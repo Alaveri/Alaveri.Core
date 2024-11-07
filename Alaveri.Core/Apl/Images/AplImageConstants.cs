@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Alaveri.Core.Apl.Images;
 
-public class AplImageConstants
+public static class AplImageConstants
 {
-    public const string AplImageIdentifier = "APLIMG";
+    public static readonly byte[] AplImageIdentifier = Encoding.ASCII.GetBytes("APLIMG");
 
     public const byte AplImageMajorVersion = 1;
 

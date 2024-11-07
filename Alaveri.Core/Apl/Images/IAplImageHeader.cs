@@ -11,7 +11,7 @@ public interface IAplImageHeader
     bool HasExtendedData { get; }
     bool HasPalette { get; }
     ushort Height { get; }
-    string Identifier { get; }
+    byte[] Identifier { get; }
     byte MajorVersion { get; }
     byte MinorVersion { get; }
     ushort PaletteSize { get; }

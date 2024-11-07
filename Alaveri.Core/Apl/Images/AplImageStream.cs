@@ -33,10 +33,11 @@ public class AplImageStream(byte[] buffer, byte planes) : Stream
         int total = 0;
         while (count > 0)
         {
-            if (position >= Buffer.Length)
+            if (position >= buffer.Length)
                 break;
             long readPosition = position * Planes;
-            buffer[readPosition] = Buffer[position++];
+            buffer[readPosition] = Buffer[position];
+            position++;
             total++;
             count--;
         }

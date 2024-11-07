@@ -44,9 +44,9 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
         return count;
     }
 
-    protected override void InitCompression()
+    protected override void InitCompression(Stream source, Stream dest)
     {
-        base.InitCompression();
+        base.InitCompression(source, dest);
         DictEntryCount = BitSize switch
         {
             12 => 5021,
@@ -101,12 +101,12 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
 
     public override async Task<int> GetOriginalSizeAsync(Stream source, CancellationToken ct = default)
     {
-        using var reader = new AsyncBinaryReader(source);
         var startPos = source.Position;
-        await reader.ReadByte(ct);
-        var total = await reader.ReadInt32(ct);
+        source.Seek(1, SeekOrigin.Current);
+        var totalArray = new byte[4];
+        await source.ReadAsync(totalArray, ct);
         source.Seek(startPos, SeekOrigin.Begin);
-        return total;
+        return BitConverter.ToInt32(totalArray, 0);
     }
 
     public override async Task<int> CompressStreamAsync(Stream source, Stream dest, int length, CancellationToken ct = default)
@@ -120,16 +120,16 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
         using var reader = new BinaryReader(source);
 
         writer.Write(BitSize);
-        ushort code = await ReadByteAsync(ct);
+        ushort code = await BitReader.ReadByteAsync(ct);
         if (AddTotalToStream)
             writer.Write(length);
 
-        while (ReadTotal < length)
+        while (BitReader.ReadTotal < length)
         {
             if (ct.IsCancellationRequested)
                 return 0;
-            var character = await ReadByteAsync(ct);
-            UpdateProgress(length, ReadTotal);
+            var character = await BitReader.ReadByteAsync(ct);
+            UpdateProgress(length, BitReader.ReadTotal);
             var index = FindEntry(code, character);
             var entry = Dictionary[index];
             if (entry.Code != Codes.EmptyCode)
@@ -150,22 +150,22 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
 
             if (code >= CurrentMaxCode && CurrentBitSize < BitSize)
             {
-                await WriteBitsAsync(Codes.IncreaseCodeSize, CurrentBitSize, ct);
+                await BitWriter.WriteBitsAsync(Codes.IncreaseCodeSize, CurrentBitSize, ct);
                 CurrentBitSize++;
                 CurrentMaxCode = (ushort)((1 << CurrentBitSize) - 1);
             }
-            await WriteBitsAsync(code, CurrentBitSize, ct);
+            await BitWriter.WriteBitsAsync(code, CurrentBitSize, ct);
             code = character;
             if (Overflow)
             {
-                await WriteBitsAsync(Codes.ClearDict, CurrentBitSize, ct);
+                await BitWriter.WriteBitsAsync(Codes.ClearDict, CurrentBitSize, ct);
                 InitCoder();
             }
         }
-        await WriteBitsAsync(code, CurrentBitSize, ct);
-        await WriteBitsAsync(Codes.EndOfStream, CurrentBitSize, ct);
-        await EndWriteBitsAsync(ct);
-        UpdateProgress(length, ReadTotal);
+        await BitWriter.WriteBitsAsync(code, CurrentBitSize, ct);
+        await BitWriter.WriteBitsAsync(Codes.EndOfStream, CurrentBitSize, ct);
+        await BitWriter.EndWriteBitsAsync(ct);
+        UpdateProgress(length, BitReader.ReadTotal);
         return (int)(dest.Position - destStart);
     }
 
@@ -185,15 +185,17 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
 
         InitCoder();
         DecodeBuffer = new byte[DictEntryCount];
-        var oldCode = await ReadBitsAsync(CurrentBitSize, ct);
+        var oldCode = await BitReader.ReadBitsAsync(CurrentBitSize, ct);
         if (oldCode == Codes.EndOfStream)
             return;
         var character = oldCode;
-        await WriteByteAsync((byte)oldCode, ct);
+        await BitWriter.WriteByteAsync((byte)oldCode, ct);
 
         while (true)
         {
-            var code = await ReadBitsAsync(CurrentBitSize, ct);
+            if (ct.IsCancellationRequested)
+                return;
+            var code = await BitReader.ReadBitsAsync(CurrentBitSize, ct);
             if (code == Codes.IncreaseCodeSize)
             {
                 CurrentBitSize++;
@@ -202,10 +204,10 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
             if (code == Codes.ClearDict)
             {
                 InitCoder();
-                oldCode = await ReadBitsAsync(CurrentBitSize, ct);
+                oldCode = await BitReader.ReadBitsAsync(CurrentBitSize, ct);
                 if (oldCode == Codes.EndOfStream)
                     break;
-                await WriteByteAsync((byte)oldCode, ct);
+                await BitWriter.WriteByteAsync((byte)oldCode, ct);
                 continue;
             }
             if (code == Codes.EndOfStream)
@@ -224,11 +226,11 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
 
             while (count > 0)
             {
-                await WriteByteAsync(DecodeBuffer[decodeIndex], ct);
+                await BitWriter.WriteByteAsync(DecodeBuffer[decodeIndex], ct);
                 decodeIndex--;
                 count--;
             }
-            UpdateProgress(originalSize, WriteTotal);
+            UpdateProgress(originalSize, BitWriter.WriteTotal);
             if (NextCode <= MaxCode)
             {
                 var entry = Dictionary[NextCode];
@@ -243,7 +245,7 @@ public class LzwCompressor(byte dataBitSize, byte bitSize) : Compressor
             }
             oldCode = code;
         }
-        await FlushWriteBufferAsync(ct);
+        await BitWriter.FlushWriteBufferAsync(ct);
     }
 
     public LzwCompressor(byte dataBitSize, AplCompressionLevel compressionLevel)

@@ -5,7 +5,7 @@ namespace Alaveri.Core.Apl.Images;
 public interface IAplImage
 {
     byte Bpp { get; }
-    byte[] Buffer { get; }
+    byte[] Buffer { get; set; }
     int DataSize { get; }
     ushort Height { get; }
     IAplPalette? Palette { get; }
