@@ -1,4 +1,5 @@
-﻿using SkiaSharp;
+﻿using Alaveri.Core.Drawing;
+using SkiaSharp;
 
 namespace Alaveri.Avalonia.Drawing;
 
@@ -17,7 +18,7 @@ public struct PixelFormatInfo(int bpp, bool indexed, SKColorType skColorType, SK
 
 public sealed class AvailablePixelFormats
 {
-    public PixelFormatInfo this[AlaveriPixelFormat index] => Formats[(int)index];
+    public PixelFormatInfo this[PixelFormat index] => Formats[(int)index];
 
     private static readonly PixelFormatInfo[] Formats =
     [

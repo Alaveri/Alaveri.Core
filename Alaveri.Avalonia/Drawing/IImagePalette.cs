@@ -27,7 +27,7 @@ public interface IImagePalette
     /// <summary>
     /// The pixel format of the palette.
     /// </summary>
-    AlaveriPixelFormat PixelFormat { get; }
+    PixelFormat PixelFormat { get; }
 
     /// <summary>
     /// The number of colors in the palette.

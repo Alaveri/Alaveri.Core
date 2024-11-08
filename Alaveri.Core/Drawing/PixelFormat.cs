@@ -1,9 +1,9 @@
-﻿namespace Alaveri.Avalonia.Drawing;
+﻿namespace Alaveri.Core.Drawing;
 
 /// <summary>
 /// Represents the pixel format of an image.
 /// </summary>
-public enum AlaveriPixelFormat
+public enum PixelFormat
 {
     /// <summary>
     /// Transparent 32-bit color.

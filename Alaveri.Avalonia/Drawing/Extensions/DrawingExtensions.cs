@@ -1,5 +1,8 @@
 ﻿using Avalonia.Media;
 using Avalonia;
+using Alaveri.Core.Drawing;
+using HslColor = Avalonia.Media.HslColor;
+using HsvColor = Avalonia.Media.HsvColor;
 
 namespace Alaveri.Avalonia.Drawing.Extensions;
 
@@ -69,5 +72,28 @@ public static class PixelFormatExtensions
 {
     private static AvailablePixelFormats AvailablePixelFormats { get; } = new AvailablePixelFormats();
 
-    public static PixelFormatInfo GetFormatInfo(this AlaveriPixelFormat pixelFormat) => AvailablePixelFormats[pixelFormat];
+    public static PixelFormatInfo GetFormatInfo(this PixelFormat pixelFormat) => AvailablePixelFormats[pixelFormat];
+}
+
+public static class ColorDefExtensions
+{
+    public static Color ToAvaloniaColor(this ColorDef color)
+    {
+        return Color.FromArgb(color.RgbAlpha, color.Red, color.Green, color.Blue);
+    }
+
+    public static HslColor ToAvaloniaHsl(this ColorDef color)
+    {
+        return new HslColor(color.Hue, color.HslSaturation, color.Lightness, color.Alpha);
+    }
+
+    public static HsvColor ToAvaloniaHsv(this ColorDef color)
+    {
+        return new HsvColor(color.Hue, color.HsvSaturation, color.Value, color.Alpha);
+    }
+
+    public static ColorDef ToColorDef(this Color color)
+    {
+        return new ColorDef(color.R, color.G, color.B, color.A);
+    }
 }

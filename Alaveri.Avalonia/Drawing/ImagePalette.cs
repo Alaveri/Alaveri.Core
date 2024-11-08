@@ -49,7 +49,7 @@ public sealed class ImagePalette : IImagePalette
     /// </summary>
     /// <param name="pixelFormat">The pixel format of the palette.</param>
     /// <exception cref="ArgumentException">Thrown if PixelFormat is not an indexed format.</exception>
-    public ImagePalette(AlaveriPixelFormat pixelFormat)
+    public ImagePalette(PixelFormat pixelFormat)
     {
         PixelFormat = pixelFormat;
         if (!IsIndexed)
@@ -60,7 +60,7 @@ public sealed class ImagePalette : IImagePalette
     /// <summary>
     /// The pixel format of the palette.
     /// </summary>
-    public AlaveriPixelFormat PixelFormat { get; }
+    public PixelFormat PixelFormat { get; }
 
     /// <summary>
     /// The colors in the palette.
@@ -96,7 +96,7 @@ public sealed class ImagePalette : IImagePalette
     /// <returns>A new instance of the ImagePalette class representing the standard APL VGA palette.</returns>
     public static IImagePalette CreateStandardAplVga()
     {
-        var result = new ImagePalette(AlaveriPixelFormat.Vga);
+        var result = new ImagePalette(PixelFormat.Vga);
         return result;
     }
 
@@ -106,7 +106,7 @@ public sealed class ImagePalette : IImagePalette
     /// <returns>A new instance of the ImagePalette class representing the standard EGA palette.</returns>
     public static IImagePalette CreateStandardEga()
     {
-        var result = new ImagePalette(AlaveriPixelFormat.Ega)
+        var result = new ImagePalette(PixelFormat.Ega)
         {
             Colors =
             [
@@ -138,7 +138,7 @@ public sealed class ImagePalette : IImagePalette
     /// <returns>A new instance of the ImagePalette class representing the standard CGA palette.</returns>
     public static IImagePalette CreateStandardCga(CgaPaletteType type)
     {
-        var result = new ImagePalette(AlaveriPixelFormat.Cga);
+        var result = new ImagePalette(PixelFormat.Cga);
         switch (type)
         {
             case CgaPaletteType.Palette0LowIntensity:

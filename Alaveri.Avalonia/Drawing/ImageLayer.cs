@@ -1,4 +1,5 @@
 ﻿using Alaveri.Avalonia.Drawing.Extensions;
+using Alaveri.Core.Drawing;
 
 namespace Alaveri.Avalonia.Drawing;
 
@@ -12,7 +13,7 @@ namespace Alaveri.Avalonia.Drawing;
 /// <param name="height">The height of the layer.</param>
 /// <param name="pixelFormat">The pixel format of the layer.</param>
 /// <param name="palette">The palette of the layer.</param>
-public class ImageLayer(int width, int height, AlaveriPixelFormat pixelFormat, IImagePalette? palette = null) : IImageLayer
+public class ImageLayer(int width, int height, PixelFormat pixelFormat, IImagePalette? palette = null) : IImageLayer
 {
     /// <summary>
     /// The width of the layer.
@@ -27,7 +28,7 @@ public class ImageLayer(int width, int height, AlaveriPixelFormat pixelFormat, I
     /// <summary>
     /// The pixel format of the layer.
     /// </summary>
-    public AlaveriPixelFormat PixelFormat { get; private set; } = pixelFormat;
+    public PixelFormat PixelFormat { get; private set; } = pixelFormat;
 
     /// <summary>
     /// The palette of the layer.

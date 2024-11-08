@@ -1,4 +1,5 @@
 ﻿using Alaveri.Avalonia.Drawing.Extensions;
+using Alaveri.Core.Drawing;
 
 namespace Alaveri.Avalonia.Drawing;
 
@@ -8,7 +9,7 @@ namespace Alaveri.Avalonia.Drawing;
 /// <param name="height">The height of the image.</param>
 /// <param name="width">The width of the image.</param>
 /// <param name="pixelFormat">The pixel format of the image.</param>
-public class Picture(int width, int height, AlaveriPixelFormat pixelFormat) : IPicture
+public class Picture(int width, int height, PixelFormat pixelFormat) : IPicture
 {
     /// <summary>
     /// The width of the image.
@@ -23,7 +24,7 @@ public class Picture(int width, int height, AlaveriPixelFormat pixelFormat) : IP
     /// <summary>
     /// The pixel format of the image.
     /// </summary>
-    public AlaveriPixelFormat PixelFormat { get; private set; } = pixelFormat;
+    public PixelFormat PixelFormat { get; private set; } = pixelFormat;
 
     /// <summary>
     /// The list of layers in the image.

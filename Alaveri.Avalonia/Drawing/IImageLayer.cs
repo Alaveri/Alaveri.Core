@@ -1,4 +1,5 @@
 ﻿using Alaveri.Avalonia.Drawing.Extensions;
+using Alaveri.Core.Drawing;
 
 namespace Alaveri.Avalonia.Drawing;
 
@@ -31,7 +32,7 @@ public interface IImageLayer
     /// <summary>
     /// The pixel format of the layer.
     /// </summary>
-    AlaveriPixelFormat PixelFormat { get; }
+    PixelFormat PixelFormat { get; }
 
     /// <summary>
     /// The width of the layer.

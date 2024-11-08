@@ -1,7 +1,7 @@
-﻿using Avalonia.Media;
+﻿using Alaveri.Core.Extensions;
 using SkiaSharp;
 
-namespace Alaveri.Avalonia.Drawing;
+namespace Alaveri.Core.Drawing;
 
 /// <summary>
 /// Represents a color definition supporting multiple color spaces.
@@ -11,27 +11,27 @@ public readonly struct ColorDef
     /// <summary>
     /// Color backing field.
     /// </summary>
-    private readonly HslColor _hslColor = Colors.White.ToHsl();
+    private readonly HslColor _hslColor = new(0, 1, 1, 1);
 
     /// <summary>
     /// The hue component of the color.
     /// </summary>
-    public double Hue => _hslColor.H;
+    public double Hue => _hslColor.Hue;
 
     /// <summary>
     /// The HSL saturation component of the color. See also <see cref="HsvSaturation"/>.
     /// </summary>
-    public double HslSaturation => _hslColor.S;
+    public double HslSaturation => _hslColor.Saturation;
 
     /// <summary>
     /// The lightness component of the color.
     /// </summary>
-    public double Lightness => _hslColor.L;
+    public double Lightness => _hslColor.Lightness;
 
     /// <summary>
     /// The alpha component of the color.
     /// </summary>
-    public double Alpha => _hslColor.A;
+    public double Alpha => _hslColor.Alpha;
 
     /// <summary>
     /// The color definition as an HSL color.
@@ -41,22 +41,22 @@ public readonly struct ColorDef
     /// <summary>
     /// The color definition as an HSV color.
     /// </summary>
-    public HsvColor AsHsvColor => _hslColor.ToHsv();
+    public HsvColor AsHsvColor => HsvColor.FromHslColor(_hslColor);
 
     /// <summary>
     /// The color definition as an ARGB color.
     /// </summary>
-    public Color AsArgbColor => _hslColor.ToRgb();
+    public ARgbColor AsARgbColor => ARgbColor.FromHslColor(_hslColor);
 
     /// <summary>
     /// The color definition as a skia SKColor.
     /// </summary>
-    public SKColor AsSkColor
+    public SKColor AsSKColor
     {
         get
         {
-            var color = AsArgbColor;
-            return new SKColor(color.R, color.G, color.B, color.A);
+            var color = AsARgbColor;
+            return new SKColor(color.Red, color.Green, color.Blue, color.Alpha);
         }
     }
 
@@ -118,7 +118,7 @@ public readonly struct ColorDef
     public ColorDef WithHsvHue(double hue)
     {
         var hsv = AsHsvColor;
-        return new HsvColor(hue, hsv.S, hsv.V, Alpha);
+        return new ColorDef(new HsvColor(hue, hsv.Saturation, hsv.Value, Alpha));
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public readonly struct ColorDef
     public ColorDef WithHsvSaturation(double saturation)
     {
         var hsv = AsHsvColor;
-        return new HsvColor(hsv.H, saturation, hsv.V, Alpha);
+        return new ColorDef(new HsvColor(hsv.Hue, saturation, hsv.Value, Alpha));
     }
 
     /// <summary>
@@ -137,8 +137,11 @@ public readonly struct ColorDef
     /// </summary>
     /// <param name="value">The value component of the color.</param>
     /// <returns>A new <see cref="ColorDef"/> with the specified HSV value component.</returns>
-    public ColorDef WithHsvValue(double value) => new(Hue, HsvSaturation, value, Alpha);
-
+    public ColorDef WithHsvValue(double value)
+    {
+        var hsv = AsHsvColor;
+        return new ColorDef(new HsvColor(hsv.Hue, hsv.Saturation, value, Alpha));
+    }
     /// <summary>
     /// The color definition as HSL with a new alpha component (0-1).
     /// </summary>
@@ -153,57 +156,49 @@ public readonly struct ColorDef
     /// <returns></returns>
     public ColorDef WithHsvAlpha(double alpha) => new(Hue, HsvSaturation, Value, alpha);
 
+
     /// <summary>
     /// The color definition as a 32-bit ARGB value.
     /// </summary>
-    public uint AsArgb => AsArgbColor.ToUInt32();
+    public uint AsArgb => AsARgbColor.AsUInt32();
 
     /// <summary>
     /// The color definition as a 32-bit RGBA value.
     /// </summary>
-    public uint AsRgbA => (byte)(Alpha * 255) | AsArgbColor.ToUInt32() & 0xFFFFFF00;
+    public uint AsRgbA => (byte)(Alpha * 255) | AsARgbColor.AsUInt32() & 0xFFFFFF00;
 
     /// <summary>
     /// The red component of the color (0-255).
     /// </summary>
-    public byte Red => AsArgbColor.R;
+    public byte Red => AsARgbColor.Red;
 
     /// <summary>
     /// The green component of the color (0-255).
     /// </summary>
-    public byte Green => AsArgbColor.G;
+    public byte Green => AsARgbColor.Green;
 
     /// <summary>
     /// The blue component of the color (0-255).
     /// </summary>
-    public byte Blue => AsArgbColor.B;
+    public byte Blue => AsARgbColor.Blue;
 
     /// <summary>
     /// The alpha component of the color as ARGB (0-255).
     /// </summary>
-    public byte RgbAlpha => AsArgbColor.A;
+    public byte RgbAlpha => AsARgbColor.Alpha;
 
-    /// <summary>
+     /// <summary>
     /// The HSV value component of the color (0-1).
     /// </summary>
-    public double Value => _hslColor.ToHsv().V;
+    public double Value => HsvColor.FromHslColor(_hslColor).Value;
 
     /// <summary>
     /// The HSV saturation component of the color. See also <see cref="HslSaturation"/>.
     /// </summary>
-    public double HsvSaturation => _hslColor.ToHsv().S;
+    public double HsvSaturation => HsvColor.FromHslColor(_hslColor).Saturation;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified Color.
-    /// </summary>
-    /// <param name="color">The color to use for the definition.</param>
-    public ColorDef(Color color)
-    {
-        _hslColor = color.ToHsl();
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified HslColor.
     /// </summary>
     /// <param name="color">The color to use for the definition.</param>
     public ColorDef(HslColor color)
@@ -212,12 +207,21 @@ public readonly struct ColorDef
     }
 
     /// <summary>
+    /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified HslColor.
+    /// </summary>
+    /// <param name="color">The color to use for the definition.</param>
+    public ColorDef(ARgbColor color)
+    {
+        _hslColor = HslColor.FromARgbColor(color);
+    }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified HsvColor.
     /// </summary>
     /// <param name="color">The color to use for the definition.</param>
     public ColorDef(HsvColor color)
     {
-        _hslColor = color.ToHsl();
+        _hslColor = HslColor.FromHsvColor(color);
     }
 
     /// <summary>
@@ -226,7 +230,7 @@ public readonly struct ColorDef
     /// <param name="color">The color to use for the definition.</param>
     public ColorDef(SKColor color)
     {
-        _hslColor = new Color(color.Alpha, color.Red, color.Green, color.Blue).ToHsl();
+        _hslColor = HslColor.FromSKColor(color);
     }
 
     /// <summary>
@@ -238,7 +242,7 @@ public readonly struct ColorDef
     /// <param name="alpha">The alpha component of the color or 255 if not specified.</param>
     public ColorDef(byte red, byte green, byte blue, byte alpha = 255)
     {
-        _hslColor = new Color(alpha, red, green, blue).ToHsl();
+        _hslColor = HslColor.FromARgbColor(new ARgbColor(red, green, blue, alpha));
     }
 
     /// <summary>
@@ -250,7 +254,7 @@ public readonly struct ColorDef
     /// <param name="alpha">The alpha component of the color or 1 if not specified.</param>
     public ColorDef(double hue, double saturation, double lightness, double alpha = 1.0)
     {
-        _hslColor = new HslColor(alpha, hue, saturation, lightness);
+        _hslColor = new HslColor(hue, saturation, lightness, alpha);
     }
 
     /// <summary>
@@ -263,7 +267,7 @@ public readonly struct ColorDef
         var red = (byte)((argb & 0x00FF0000) >> 16);
         var green = (byte)((argb & 0x0000FF00) >> 8);
         var blue = (byte)(argb & 0x000000FF);
-        _hslColor = new Color(alpha, red, green, blue).ToHsl();
+        _hslColor = HslColor.FromARgbColor(new ARgbColor(alpha, red, green, blue));
     }
 
     /// <summary>
@@ -290,6 +294,7 @@ public readonly struct ColorDef
     /// <returns>A new <see cref="ColorDef"/> with the specified HSL color components.</returns>
     public static ColorDef FromHsl(double hue, double saturation, double lightness, double alpha = 1) => new(hue, saturation, lightness, alpha);
 
+    
     /// <summary>
     /// Initializes a new instance of the <see cref="ColorDef"/> struct with the specified hue, saturation, value, and alpha components (0-1).
     /// </summary>
@@ -298,22 +303,22 @@ public readonly struct ColorDef
     /// <param name="value">The value component of the color.</param>
     /// <param name="alpha">The alpha component of the color or 1 if not specified.</param>
     /// <returns>A new <see cref="ColorDef"/> with the specified HSV color components.</returns>
-    public static ColorDef FromHsv(double hue, double saturation, double value, double alpha = 1) => new HsvColor(hue, saturation, value, alpha);
+    public static ColorDef FromHsv(double hue, double saturation, double value, double alpha = 1) => new(hue, saturation, value, alpha);
 
-    public static implicit operator Color(ColorDef color) => color.AsArgbColor;
+    public static implicit operator ARgbColor(ColorDef color) => color.AsARgbColor;
 
     public static implicit operator HslColor(ColorDef color) => color.AsHslColor;
 
     public static implicit operator HsvColor(ColorDef color) => color.AsHsvColor;
 
-    public static implicit operator SKColor(ColorDef color) => color.AsSkColor;
+    public static implicit operator SKColor(ColorDef color) => color.AsSKColor;
 
     public static implicit operator uint(ColorDef color) => color.AsArgb;
 
-    public static implicit operator ColorDef(Color color) => new(color);
+    public static implicit operator ColorDef(ARgbColor color) => new(color);
 
     public static implicit operator ColorDef(HslColor color) => new(color);
-
+    
     public static implicit operator ColorDef(HsvColor color) => new(color);
 
     public static implicit operator ColorDef(SKColor color) => new(color);
